@@ -1,0 +1,1301 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🌲 Лесное выживание 🌲</title>
+    <style>
+        /* Стили без изменений (такие же, как в предыдущей версии) */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background: #1f3b1a;
+            background-image: repeating-linear-gradient(45deg, #2b4d24 0px, #2b4d24 2px, #1f3b1a 2px, #1f3b1a 8px);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+            font-family: 'Segoe UI', 'Roboto', 'Helvetica Neue', sans-serif;
+        }
+
+        .game-wrapper {
+            max-width: 900px;
+            width: 100%;
+            position: relative;
+        }
+
+        .leaf-decoration {
+            position: absolute;
+            top: -30px;
+            left: -30px;
+            right: -30px;
+            bottom: -30px;
+            pointer-events: none;
+            z-index: 0;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" opacity="0.2"><path fill="%233d8c40" d="M50,30 Q70,10 90,30 Q100,50 80,70 Q60,80 40,70 Q20,60 30,40 Q35,30 50,30Z" /><path fill="%233d8c40" d="M140,120 Q160,100 180,120 Q190,140 170,160 Q150,170 130,160 Q110,150 120,130 Q125,120 140,120Z" /><path fill="%233d8c40" d="M30,150 Q50,130 70,150 Q80,170 60,190 Q40,200 20,180 Q10,160 30,150Z" /></svg>');
+            background-repeat: repeat;
+            background-size: 150px 150px;
+        }
+
+        .game-container {
+            background: #2d4427;
+            background: linear-gradient(145deg, #2d5a2a, #1d3a1a);
+            border: 8px solid #6b4f2b;
+            border-radius: 70px 70px 30px 30px;
+            box-shadow: 0 25px 35px rgba(0,0,0,0.8), inset 0 0 30px #a18b54;
+            padding: 25px 20px;
+            color: #faf3d7;
+            position: relative;
+            z-index: 1;
+            transition: all 0.3s;
+        }
+
+        .game-container::before {
+            content: "🌿🌲🍂🍃🌱";
+            font-size: 70px;
+            position: absolute;
+            top: -30px;
+            left: -30px;
+            opacity: 0.2;
+            transform: rotate(-15deg);
+            white-space: nowrap;
+            pointer-events: none;
+        }
+
+        .game-container::after {
+            content: "";
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            width: 180px;
+            height: 180px;
+            background: radial-gradient(circle at 20px 30px, #3f722a 5px, transparent 7px), 
+                        repeating-linear-gradient(45deg, #4c7a3a 0px, #4c7a3a 4px, #2f5427 4px, #2f5427 8px);
+            border-radius: 60% 40% 70% 30%;
+            opacity: 0.15;
+            transform: rotate(20deg);
+            pointer-events: none;
+        }
+
+        h1 {
+            font-size: 3rem;
+            text-align: center;
+            font-weight: 800;
+            text-shadow: 5px 5px 0 #2c4d1a, 7px 7px 0 #1a3110, 0 10px 15px black;
+            margin-bottom: 15px;
+            letter-spacing: 4px;
+            word-break: break-word;
+            color: #ffefc0;
+            filter: drop-shadow(0 4px 2px rgba(0,0,0,0.5));
+            animation: glow 3s infinite alternate;
+        }
+
+        @keyframes glow {
+            from { text-shadow: 5px 5px 0 #2c4d1a, 7px 7px 0 #1a3110, 0 0 10px #7faa60; }
+            to { text-shadow: 5px 5px 0 #2c4d1a, 7px 7px 0 #1a3110, 0 0 20px #b1d18b; }
+        }
+
+        .stats-panel {
+            background: #295321;
+            background: linear-gradient(to bottom, #3b6933, #1f4219);
+            border: 4px solid #b3914b;
+            border-radius: 80px 80px 40px 40px;
+            padding: 15px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-around;
+            gap: 15px;
+            margin-bottom: 20px;
+            box-shadow: inset 0 5px 10px #14280f, 0 12px 0 #4b3b1f;
+            animation: slideIn 0.5s ease-out;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .stat-item {
+            background: #173312;
+            border-radius: 60px;
+            padding: 8px 20px;
+            min-width: 110px;
+            text-align: center;
+            border: 3px solid #ebc471;
+            box-shadow: inset 0 -5px 0 #6b4f1f, 0 6px 0 #3b2e12;
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #faf0bb;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 800;
+            line-height: 1.2;
+            color: #fff3a0;
+            text-shadow: 3px 3px 0 #2f621f;
+        }
+
+        .inventory-box {
+            background: #2f5827;
+            border: 4px solid #b7974f;
+            border-radius: 60px 60px 30px 30px;
+            padding: 15px;
+            margin: 20px 0;
+            box-shadow: inset 0 0 15px #1c3d14, 0 10px 0 #5a431f;
+            animation: fadeIn 0.7s;
+        }
+
+        .inventory-title {
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-bottom: 3px dashed #c7af6b;
+            padding-bottom: 8px;
+            text-shadow: 2px 2px 0 #1e3a12;
+        }
+
+        .inventory-items {
+            background: #1d3e18;
+            border-radius: 50px;
+            padding: 15px;
+            min-height: 70px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            border: 2px solid #b49447;
+            box-shadow: inset 0 4px 8px #0b2009;
+        }
+
+        .item-tag {
+            background: #5f874b;
+            background: linear-gradient(145deg, #77a35c, #4f703b);
+            color: #fff7cf;
+            padding: 8px 20px;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            box-shadow: 0 5px 0 #2a4a1f, inset 0 2px 8px #ebdd9c;
+            border: 1px solid #f3dea2;
+            text-transform: lowercase;
+            transition: 0.1s;
+            backdrop-filter: blur(2px);
+        }
+
+        .item-tag::first-letter {
+            text-transform: uppercase;
+        }
+
+        .action-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin: 20px 0 15px;
+            justify-content: center;
+        }
+
+        .action-btn {
+            background: #84a76b;
+            background: linear-gradient(to bottom, #9fc085, #5e8249);
+            border: none;
+            border-bottom: 6px solid #325023;
+            font-size: 1.6rem;
+            font-weight: 800;
+            padding: 12px 20px;
+            min-width: 130px;
+            border-radius: 70px;
+            color: #1a2e13;
+            text-shadow: 2px 2px 0 #c7e2a8;
+            cursor: pointer;
+            box-shadow: 0 8px 0 #2a451f, 0 10px 15px black;
+            transition: all 0.05s linear;
+            flex: 1 1 auto;
+            letter-spacing: 1px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+            100% { transform: scale(1); }
+        }
+
+        .action-btn:active {
+            transform: translateY(5px);
+            border-bottom-width: 3px;
+            box-shadow: 0 4px 0 #2a451f;
+        }
+
+        .action-btn:disabled {
+            opacity: 0.4;
+            transform: translateY(3px);
+            border-bottom-width: 4px;
+            pointer-events: none;
+            filter: grayscale(0.6);
+        }
+
+        .special-btn {
+            background: #cdb87a;
+            background: linear-gradient(to bottom, #eedb9f, #b89f5a);
+            border-bottom-color: #755e2a;
+            color: #2f2a10;
+            text-shadow: 2px 2px 0 #ffeeaa;
+        }
+
+        .log-area {
+            background: #1d341a;
+            border: 5px solid #876f3b;
+            border-radius: 50px 50px 25px 25px;
+            padding: 15px;
+            margin-top: 20px;
+            max-height: 250px;
+            overflow-y: auto;
+            font-size: 1.1rem;
+            line-height: 1.5;
+            box-shadow: inset 0 0 30px #0e230c, 0 8px 0 #4f3e1f;
+            color: #ede3ae;
+            scrollbar-width: thin;
+            scrollbar-color: #a58f4d #1e3a14;
+        }
+
+        .log-area::-webkit-scrollbar {
+            width: 10px;
+        }
+        .log-area::-webkit-scrollbar-track {
+            background: #1e3a14;
+            border-radius: 20px;
+        }
+        .log-area::-webkit-scrollbar-thumb {
+            background: #a58f4d;
+            border-radius: 20px;
+            border: 2px solid #4b6a2e;
+        }
+
+        .log-message {
+            padding: 6px 0;
+            border-bottom: 1px solid #6f9146;
+            animation: fadeInLog 0.3s;
+        }
+
+        @keyframes fadeInLog {
+            from { opacity: 0; transform: translateX(10px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .log-message:last-child {
+            border: none;
+        }
+
+        .start-screen {
+            text-align: center;
+            padding: 20px;
+        }
+
+        .difficulty-selector {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+            margin: 30px 0;
+        }
+
+        .diff-btn {
+            background: #53833b;
+            background: radial-gradient(circle at 30% 20%, #8fc77a, #356128);
+            border: 6px solid #fbdf93;
+            padding: 18px 35px;
+            font-size: 2rem;
+            font-weight: 800;
+            border-radius: 80px;
+            color: #1f3815;
+            cursor: pointer;
+            box-shadow: 0 12px 0 #2c4b1c, 0 20px 25px black;
+            transition: 0.05s linear;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+
+        .diff-btn:active {
+            transform: translateY(8px);
+            box-shadow: 0 5px 0 #2c4b1c;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .use-item-panel {
+            background: #34632a;
+            background: linear-gradient(145deg, #49853b, #1e4717);
+            border: 5px solid #edcb7a;
+            border-radius: 70px;
+            padding: 20px;
+            margin: 20px 0 10px;
+            box-shadow: inset 0 0 20px #9ccf82, 0 10px 0 #5d421c;
+            transform-origin: top;
+            animation: slideDown 0.2s ease-out;
+        }
+
+        @keyframes slideDown {
+            0% { opacity: 0; transform: translateY(-20px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+
+        .use-item-controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .use-item-input {
+            flex: 3;
+            background: #1b3b15;
+            border: 4px solid #fad779;
+            border-radius: 60px;
+            padding: 12px 20px;
+            font-size: 1.2rem;
+            color: #fffcd1;
+            outline: none;
+            box-shadow: inset 0 5px 10px #0b2007;
+        }
+
+        .use-item-input::placeholder {
+            color: #9fc087;
+            font-style: italic;
+        }
+
+        .small-btn {
+            background: #eed894;
+            background: linear-gradient(to bottom, #ffeaa5, #c9aa54);
+            border: none;
+            border-bottom: 5px solid #83672b;
+            font-size: 1.3rem;
+            font-weight: bold;
+            padding: 12px 20px;
+            border-radius: 60px;
+            cursor: pointer;
+            flex: 1;
+            min-width: 120px;
+            box-shadow: 0 6px 0 #5c451c, 0 5px 15px black;
+            transition: 0.05s;
+            color: #1a2d0f;
+        }
+
+        .small-btn:active {
+            transform: translateY(4px);
+            border-bottom-width: 2px;
+            box-shadow: 0 3px 0 #5c451c;
+        }
+
+        .close-btn {
+            background: #bd9d64;
+            background: linear-gradient(to bottom, #dbbc7c, #9e7d42);
+            border-bottom-color: #60431b;
+        }
+
+        .forest-icon {
+            font-size: 1.8rem;
+            filter: drop-shadow(2px 4px 4px #00000066);
+        }
+
+        .extra-notice {
+            background: #2d5423;
+            border-radius: 40px;
+            padding: 8px 15px;
+            font-size: 1.1rem;
+            color: #ffe48f;
+            text-align: center;
+            margin-top: 10px;
+            border: 2px solid #c1a351;
+        }
+
+        .restart-btn {
+            background: #b68b54;
+            border: 4px solid #fbdf93;
+            font-size: 1.6rem;
+            padding: 12px 25px;
+            border-radius: 70px;
+            color: #1f3815;
+            cursor: pointer;
+            font-weight: bold;
+            margin: 20px auto 0;
+            display: block;
+            box-shadow: 0 6px 0 #5a431f;
+            transition: 0.05s;
+            width: fit-content;
+        }
+
+        .restart-btn:active {
+            transform: translateY(4px);
+            box-shadow: 0 3px 0 #5a431f;
+        }
+
+        .restart-btn.hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+<div class="game-wrapper">
+    <div class="leaf-decoration"></div>
+    <div class="game-container" id="gameContainer">
+        <!-- Экран выбора сложности -->
+        <div id="startScreen" class="start-screen">
+            <h1><span class="forest-icon">🌲</span> ЛЕСНОЕ ВЫЖИВАНИЕ <span class="forest-icon">🌲</span></h1>
+            <div style="font-size: 1.5rem; background: #1e3d1a; padding: 20px; border-radius: 60px; border: 3px solid #cfa55a;">
+                <p>✧ наберите 20 энергии ✧<br>✧ сделайте ≥10 шагов ✧<br>✧ совершите ≥5 пробежек ✧<br>✧ найдите КОМПАС ✧</p>
+            </div>
+            <div class="difficulty-selector">
+                <div class="diff-btn" data-diff="легко">🌱 ЛЕГКО</div>
+                <div class="diff-btn" data-diff="средне">🍂 СРЕДНЕ</div>
+                <div class="diff-btn" data-diff="сложно">🌪️ СЛОЖНО</div>
+            </div>
+            <div class="extra-notice">выберите уровень страха :)</div>
+        </div>
+
+        <!-- Основной игровой экран -->
+        <div id="gameScreen" class="hidden">
+            <h1>🏕️ В ЛЕСУ</h1>
+
+            <div class="stats-panel">
+                <div class="stat-item"><span class="forest-icon">⚡</span> Энергия<br><span class="stat-value" id="energyVal">0</span></div>
+                <div class="stat-item"><span class="forest-icon">🚶</span> Шаги<br><span class="stat-value" id="stepsVal">0</span></div>
+                <div class="stat-item"><span class="forest-icon">🏃</span> Пробежки<br><span class="stat-value" id="runVal">0</span></div>
+                <div class="stat-item"><span class="forest-icon">🔢</span> Ход<br><span class="stat-value" id="turnVal">1</span></div>
+            </div>
+
+            <div class="inventory-box">
+                <div class="inventory-title"><span class="forest-icon">🎒</span> ИНВЕНТАРЬ</div>
+                <div class="inventory-items" id="inventoryContainer"></div>
+            </div>
+
+            <div class="action-buttons">
+                <button class="action-btn" id="goBtn"><span class="forest-icon">🚶</span> ИДТИ</button>
+                <button class="action-btn" id="restBtn"><span class="forest-icon">😴</span> ОТДЫХАТЬ</button>
+                <button class="action-btn" id="runBtn"><span class="forest-icon">🏃</span> БЕЖАТЬ</button>
+                <button class="action-btn special-btn" id="statusBtn"><span class="forest-icon">📦</span> РЮКЗАК</button>
+            </div>
+
+            <div id="useItemPanel" class="use-item-panel hidden">
+                <div style="font-size: 1.8rem; margin-bottom: 10px;">🍄 Что хотите использовать?</div>
+                <div class="use-item-controls">
+                    <input type="text" id="itemInput" class="use-item-input" placeholder="название предмета" autocomplete="off">
+                    <button class="small-btn" id="useItemBtn">👍 ИСПОЛЬЗОВАТЬ</button>
+                    <button class="small-btn close-btn" id="closeUsePanelBtn">❌ ЗАКРЫТЬ</button>
+                </div>
+                <div class="extra-notice" style="margin-top: 10px;">* можно использовать: ягоды, орешки, чей-то бутерброд, пирог, яблоко, трость, компас</div>
+            </div>
+
+            <div class="log-area" id="logContainer">
+                <div class="log-message">🌳 Добро пожаловать в лес...</div>
+            </div>
+
+            <button id="restartBtn" class="restart-btn hidden">🔄 Начать заново</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    (function() {
+        // ---------- Игровые переменные ----------
+        let hod = 1;
+        let steps = 0;
+        let run = 0;
+        let e = 0;
+        let inventory = [];
+        let gameActive = true;
+        let difficulty = "";
+
+        // ---------- Массивы фраз из Python-кода ----------
+        const walk1 = [
+            "Вы споткнулись о корень -1",
+            "Вы запнулись о камень -1",
+            "Вас оцарапала ветка -1",
+            "Вы упали -1",
+            "Вы поскользнулись на мокрой траве -1",
+            "Вы зацепились за куст -1",
+            "Вам в глаз попала соринка -1",
+            "Вы чуть не упали в яму -1",
+            "Вы наступили на шишку -1",
+            "Вас обдало веткой -1"
+        ];
+        const walk5 = [
+            "Вы нашли поляну с мягким мхом, вас одолело чувство прекрасного +3",
+            "Вы наткнулись на грибное место и съели грибы которые могли +3",
+            "Вы прошли по солнечной опушке +3",
+            "Вам повстречался зайчик, он поднял настроение +3",
+            "Вы нашли родник с чистой водой +3",
+            "Вы увидели очень красивую птичку, она спела вам +3",
+            "Вы вышли на тропу, идти стало легче +3",
+            "Вас обдул тёплый ветерок +3",
+            "Вы нашли съедобные коренья и съели их +3",
+            "Вы увидели красивый пейзаж, отвлеклись и отдохнули +3"
+        ];
+        const walk3 = [
+            "Вы прошли по тенёчку +1",
+            "На вас красиво падал свет +1",
+            "Вы подумали что дома вас ждут и наполнились решимостью +1",
+            "Вы вспомнили весёлую песенку, она вас успокоила +1",
+            "Вам показалось, что вы узнаёте это место +1",
+            "Вы вроде заметили знакомый ориентир +1",
+            "Вы наткнулись на старые следы +1",
+            "Вам стало чуть легче от мысли, что вас ищют +1",
+            "Вы нашли съедобный гриб +1",
+            "Вы выпили воды из ручья +1"
+        ];
+        const walk4 = [
+            "Вы наступили в глубокую лужу -4",
+            "Вы провалились в яму с водой -4",
+            "Вас залило дождём -4",
+            "Вы забрели в болото -4",
+            "Вы поранились о сухую ветку -4",
+            "Вас укусил слепень -4",
+            "Вы потеряли равновесие и упали на колючки -4",
+            "Вы наступили на острый камень -4",
+            "Вас облепили колючки -4",
+            "Вы провалились в нору -4"
+        ];
+        const walk2 = [
+            "Ничего особенного не произошло.",
+            "Вы просто идёте дальше.",
+            "В лесу тихо и спокойно.",
+            "Вы слышите далёкий стук дятла.",
+            "Ветер шелестит листвой.",
+            "Вы видите белочку на дереве.",
+            "Вы чувствуете траву под ногами.",
+            "Вы чувствуете запах хвои.",
+            "Вокруг ни души.",
+            "Вы идёте по мягкой траве."
+        ];
+        const rest1 = [
+            "Вас ужалила пчела -4",
+            "Вас укусил муравей -4",
+            "Вы сели на муравейник -4",
+            "На вас упала шишка -4",
+            "Вас облепили комары -4",
+            "Вы отдохнули на холодной земле и замёрзли -4",
+            "Рядом пробежал кабан, вы испугались -4",
+            "Вы присели на гнилое бревно и оно провалилось -4",
+            "Вас обрызгало грязью от проходящего зверя -4",
+            "Вы выпили воды из ручья и она оказалась грязной -4"
+        ];
+        const rest5 = [
+            "Белочка поделилась с вами орешками +2",
+            "Вы нашли съедобные грибы +2",
+            "Вы сели на удобный мох +2",
+            "Кто-то оставил пустое полотно после пикника, вы удобно на нём отдохнули +2",
+            "Вы нашли удобный пень для сидения +2",
+            "Вас согрел солнечный луч +2",
+            "Вокруг вас было много деревьев, они защитили от ветра +2",
+            "Рядом запел соловей, стало спокойно +2",
+            "Вы нашли немного мёда в дупле +2",
+            "Вы полежали на мягкой траве +2"
+        ];
+        const rest3 = [
+            "Вы нашли хорошее местечко для отдыха +1",
+            "Вы прилегли на мягкий мох +1",
+            "Вы отдохнули под деревом +1",
+            "Вам стало легче после отдыха +1",
+            "Вы выпили воды +1",
+            "Вы размяли ноги +1",
+            "Вы понаблюдали за белкой +1",
+            "Вы собрали немного цветочков, это успокоило +1",
+            "Вы нашли сухое место +1",
+            "Вы просто посидели в тишине +1"
+        ];
+        const rest4 = [
+            "Было слишком жарко, вы не смогли отдохнуть -2",
+            "Было слишком холодно -2",
+            "Начался дождь -2",
+            "Вас беспокоили насекомые -2",
+            "Рядом прошёл зверь, вы напряглись -2",
+            "Вы сели на мокрое место -2",
+            "Вас отвлекли звуки -2",
+            "Вы не могли найти удобную позу -2",
+            "Вам мешал ветер -2",
+            "Вы попытались забраться на ветку, но упали -2"
+        ];
+        const rest2 = [
+            "Вы спокойно отдохнули",
+            "Ничего не случилось",
+            "Вы просто посидели",
+            "Вокруг тишина",
+            "Вы подышали свежим воздухом",
+            "Вам стало немного спокойнее",
+            "Вы слушали пение птиц",
+            "Вы смотрели на облака",
+            "Вы прикрыли глаза на минуту",
+            "Отдых прошёл хорошо"
+        ];
+        const run1 = [
+            "Вы слишком устали -3",
+            "Вы запыхались -3",
+            "Вы споткнулись на бегу -3",
+            "Вы подвернули ногу -3",
+            "У вас свело мышцу -3",
+            "Вы натёрли ногу -3",
+            "Вы упали от усталости -3",
+            "Вам стало плохо от быстрого бега -3",
+            "Вы сбились с дыхания -3",
+            "Вы перегрелись -3"
+        ];
+        const run5 = [
+            "Вы взбодрились и вам стало хорошо +5",
+            "Вы нашли второе дыхание +5",
+            "Бег разогрел мышцы +5",
+            "Вы почувствовали прилив сил +5",
+            "Вам показолось что вы слышите голоса +5",
+            "Вас подстегнул адреналин +5",
+            "Вы пробежали мимо красивого места +5",
+            "Вы догнали зайца +5",
+            "Вы нашли тропу +5",
+            "Вам показалось, что вы услышали звук машины вдалеке +5"
+        ];
+        const run3 = [
+            "Вы нашли кучу еды после пикника +9",
+            "Вы наткнулись на грибную поляну +9",
+            "Вы обнаружили ягодник +9",
+            "Вы нашли рюкзак с припасами +9",
+            "Вам повезло наткнуться на туристическую стоянку +9",
+            "Вы нашли яблоню, с кучей яблок +9",
+            "Вы нашли дерево, на котором растёт множество вишен +9",
+            "Вы нашли чью-то оставленную корзинку с едой +9",
+            "Вы обноружили дерево на котором растёт много груш +9",
+            "Вы нашли куст жимосоти +9"
+        ];
+        const run4 = [
+            "Волк вас нашёл -6",
+            "Вы наступили на змею -6",
+            "Вас погнался кабан -6",
+            "Вы провалились в овраг -6",
+            "Вы сильно поранились о ветку -6",
+            "Вас укусила змея -6",
+            "Вы споткнулись и упали -6",
+            "Вас залило дождём -6",
+            "Вы упали в куст крапивы -6",
+            "Вас атаковали осы -6"
+        ];
+        const run2 = [
+            "Вы бежите в спокойном темпе",
+            "Ничего не происходит",
+            "Вы слышите только своё дыхание",
+            "Лес мелькает перед глазами",
+            "Вы чувствуете прилив энергии",
+            "Вам нравится бежать",
+            "Вы огибаете деревья",
+            "Тропинка ровная",
+            "Вы бежите уже несколько минут",
+            "Ветер дует в лицо"
+        ];
+        const run_rare = [
+            "Вас окружила стая волков -9",
+            "На вас напал медведь -9",
+            "Вы попали в капкан -9",
+            "Вы сорвались с обрыва -9",
+            "Вас застала буря -9",
+            "Вы заблудились в болоте -9",
+            "Вас преследует стая кабанов -9",
+            "Рядом с вами ударила молния -9",
+            "Вас придавило деревом -9",
+            "Вы упали в обморок -9"
+        ];
+
+        const loot = ["ягоды", "орешки", "чей-то бутерброд", "ничего"];
+
+        // Словарь команд-синонимов (оставлен для возможного расширения)
+        const commands = {
+            "идти": 1, "шагать": 1, "walk": 1, "итди": 1,
+            "отдыхать": 2, "rest": 2, "отдых": 2, "одыхать": 2,
+            "бежать": 3, "run": 3, "бегать": 3, "побегать": 3, "побежать": 3,
+            "статус": 4, "инвентарь": 4, "рюкзак": 4, "инвернать": 4
+        };
+
+        // DOM-элементы
+        const startScreen = document.getElementById('startScreen');
+        const gameScreen = document.getElementById('gameScreen');
+        const energySpan = document.getElementById('energyVal');
+        const stepsSpan = document.getElementById('stepsVal');
+        const runSpan = document.getElementById('runVal');
+        const turnSpan = document.getElementById('turnVal');
+        const inventoryDiv = document.getElementById('inventoryContainer');
+        const logContainer = document.getElementById('logContainer');
+        const useItemPanel = document.getElementById('useItemPanel');
+        const itemInput = document.getElementById('itemInput');
+        const useItemBtn = document.getElementById('useItemBtn');
+        const closeUsePanelBtn = document.getElementById('closeUsePanelBtn');
+        const restartBtn = document.getElementById('restartBtn');
+
+        const goBtn = document.getElementById('goBtn');
+        const restBtn = document.getElementById('restBtn');
+        const runBtn = document.getElementById('runBtn');
+        const statusBtn = document.getElementById('statusBtn');
+
+        // Кнопки сложности
+        document.querySelectorAll('.diff-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                difficulty = e.target.getAttribute('data-diff');
+                startGame(difficulty);
+            });
+        });
+
+        // Перезапуск
+        restartBtn.addEventListener('click', () => {
+            gameScreen.classList.add('hidden');
+            startScreen.classList.remove('hidden');
+            disableButtons(true);
+            gameActive = true;
+            useItemPanel.classList.add('hidden');
+            restartBtn.classList.add('hidden');
+        });
+
+        function addLog(message) {
+            const msgDiv = document.createElement('div');
+            msgDiv.className = 'log-message';
+            msgDiv.textContent = message;
+            logContainer.appendChild(msgDiv);
+            logContainer.scrollTop = logContainer.scrollHeight;
+        }
+
+        function clearLog() {
+            logContainer.innerHTML = '';
+        }
+
+        function updateUI() {
+            energySpan.textContent = e;
+            stepsSpan.textContent = steps;
+            runSpan.textContent = run;
+            turnSpan.textContent = hod;
+            inventoryDiv.innerHTML = '';
+            if (inventory.length === 0) {
+                inventoryDiv.innerHTML = '<div class="item-tag" style="background: #416336;">🧺 пусто</div>';
+            } else {
+                inventory.forEach(item => {
+                    const tag = document.createElement('div');
+                    tag.className = 'item-tag';
+                    let icon = '';
+                    if (item.includes('ягод')) icon = '🍓';
+                    else if (item.includes('ореш')) icon = '🥜';
+                    else if (item.includes('бутерброд')) icon = '🥪';
+                    else if (item.includes('пирог')) icon = '🥧';
+                    else if (item.includes('яблок')) icon = '🍎';
+                    else if (item.includes('трость')) icon = '🩼';
+                    else if (item.includes('компас')) icon = '🧭';
+                    else icon = '📦';
+                    tag.textContent = icon + ' ' + item;
+                    inventoryDiv.appendChild(tag);
+                });
+            }
+        }
+
+        function removeOneFromInventory(itemName) {
+            const index = inventory.indexOf(itemName);
+            if (index !== -1) inventory.splice(index, 1);
+        }
+
+        function randomChoice(arr) {
+            return arr[Math.floor(Math.random() * arr.length)];
+        }
+
+        function checkWinLose() {
+            if (e >= 20 && steps >= 10 && run >= 5 && inventory.includes("компас")) {
+                const wins = [
+                    "Вы смогли сбежать из леса и вернуться домой",
+                    "Перепуганные близкие нашли вас, вам пришлось лежать в больнице, но со временем всё вернулось на круги своя",
+                    "Вас нашли спасатели, всё закончилось хорошо",
+                    "Вы смогли сбежать, после этого вы больше никогда не ходили в лес"
+                ];
+                addLog("✨✨✨ ПОБЕДА ✨✨✨");
+                addLog(randomChoice(wins));
+                gameActive = false;
+                disableButtons(true);
+                useItemPanel.classList.add('hidden');
+                restartBtn.classList.remove('hidden');
+                return;
+            }
+            if (e <= 0) {
+                const deaths = [
+                    "Вы уснули под кустом. Навсегда",
+                    "Лес принял вас в свои объятия. Навсегда",
+                    "Грибники найдут ваши кости через год",
+                    "Вы стали частью экосистемы"
+                ];
+                addLog("💀💀💀 ВЫ ПОГИБЛИ 💀💀💀");
+                addLog(randomChoice(deaths));
+                gameActive = false;
+                disableButtons(true);
+                useItemPanel.classList.add('hidden');
+                restartBtn.classList.remove('hidden');
+                return;
+            }
+            if (e >= 20 && run > 5 && inventory.includes("компас") && steps < 10) {
+                addLog("Для того чтобы выбраться из леса нужно походить");
+            } else if (e >= 20 && run < 5 && inventory.includes("компас") && steps > 10) {
+                addLog("Для того чтобы выбраться из леса нужно побегать");
+            } else if (e >= 20 && run > 5 && !inventory.includes("компас") && steps > 10) {
+                addLog("Для того чтобы выбраться из леса нужно найти компас");
+            } else if (e < 20 && run > 5 && inventory.includes("компас") && steps > 10) {
+                addLog("Для того чтобы выбраться из леса нужно больше энергии");
+            } else if (e >= 20 && run < 5 && inventory.includes("компас") && steps < 10) {
+                addLog("Для того чтобы выбраться из леса нужно побегать и походить");
+            } else if (e >= 20 && run < 5 && !inventory.includes("компас") && steps < 10) {
+                addLog("Для того чтобы выбраться из леса нужно найти компас, также походить и побегать");
+            }
+        }
+
+        function disableButtons(disabled) {
+            const btns = [goBtn, restBtn, runBtn, statusBtn, useItemBtn, closeUsePanelBtn];
+            btns.forEach(b => b.disabled = disabled);
+        }
+
+        // Функция для временного отключения кнопок (кулдаун)
+        function cooldownButtons(ms) {
+            if (!gameActive) return;
+            const btns = [goBtn, restBtn, runBtn, statusBtn, useItemBtn, closeUsePanelBtn];
+            btns.forEach(b => b.disabled = true);
+            setTimeout(() => {
+                if (gameActive) {
+                    btns.forEach(b => b.disabled = false);
+                }
+            }, ms);
+        }
+
+        function startGame(diff) {
+            hod = 1;
+            steps = 0;
+            run = 0;
+            inventory = [];
+            gameActive = true;
+
+            if (diff === "легко") {
+                e = 20;
+                addLog("Утром вы решили пойти собирать грибы и ягоды в лес. У вас много сил, вы выспались и вкусно покушали перед выходом. Но вы заблудились, вам нужно выбраться из леса");
+            } else if (diff === "сложно") {
+                e = 5;
+                addLog("Вы шли через лес ночью после работы, чтобы сократить путь домой. У вас почти нет сил, вы вымотаны, но дома ждут, вам надо выбраться");
+            } else if (diff === "средне") {
+                e = 15;
+                addLog("Вы пошли в лес за хворостом для костра. День выдался обычный, сил хватит ненадолго, но вы знаете эти места... или только казалось?");
+            } else {
+                e = 8;
+                addLog("Странный выбор, но вы уже в лесу. Придётся выживать как есть");
+            }
+
+            startScreen.classList.add('hidden');
+            gameScreen.classList.remove('hidden');
+            clearLog();
+            updateUI();
+            disableButtons(false);
+            useItemPanel.classList.add('hidden');
+            restartBtn.classList.add('hidden');
+            addLog(`Энергия: ${e}`);
+        }
+
+        // ---------- Действия с кулдауном и выводом хода ----------
+        function goAction() {
+            if (!gameActive) return;
+            cooldownButtons(500);
+            let currentHod = hod;
+            addLog(`Ход ${currentHod}`);
+            hod++;
+            e -= 1;
+            steps += 1;
+            addLog("Вы пошли дальше -1");
+
+            let chance = Math.floor(Math.random() * 5) + 1;
+            if (chance === 1) {
+                e -= 1;
+                addLog(randomChoice(walk1));
+            } else if (chance === 5) {
+                e += 3;
+                addLog(randomChoice(walk5));
+            } else if (chance === 3) {
+                e += 1;
+                addLog(randomChoice(walk3));
+            } else if (chance === 4) {
+                e -= 4;
+                addLog(randomChoice(walk4));
+            } else {
+                addLog(randomChoice(walk2));
+            }
+
+            let rare = Math.floor(Math.random() * 10) + 1;
+            if (rare === 5) {
+                e -= 5;
+                addLog("Редкое событие! Вы попали в чью то ловушку -5");
+            } else if (rare === 6) {
+                e += 5;
+                addLog("Редкое событие! Вы нашли трость, с ней ходить будет проще +5");
+                inventory.push("трость");
+                addLog("трость добавлен в рюкзак!");
+            }
+
+            let rareGlobal = Math.floor(Math.random() * 15) + 1;
+            if (rareGlobal === 1) {
+                addLog("Редкое событие! Вы нашли пирог");
+                inventory.push("пирог");
+                addLog("Пирог добавлен в рюкзак!");
+            } else if (rareGlobal === 2) {
+                e -= 7;
+                addLog("Редкое событие! Вы встретили медведя -7");
+            } else if (rareGlobal === 3) {
+                addLog("Редкое событие! Вы нашли на редкость вкусное яблоко");
+                inventory.push("яблоко");
+                addLog("Яблоко добавлен в рюкзак!");
+            } else if (rareGlobal === 4) {
+                e -= 2;
+                addLog("Редкое событие! Вас укусил комар -2 энергии");
+            }
+
+            let rareCompass = Math.floor(Math.random() * 50) + 1;
+            if (rareCompass === 50) {
+                addLog("Редкое событие! Вы нашли компас!");
+                inventory.push("компас");
+                addLog("Компас добавлен в рюкзак!");
+            }
+
+            if (hod % 6 === 0) {
+                let found = randomChoice(loot);
+                addLog(`Вы нашли: ${found}`);
+                if (found === "ягоды") {
+                    inventory.push("ягоды");
+                    addLog("Ягоды добавлены в рюкзак!");
+                } else if (found === "орешки") {
+                    inventory.push("орешки");
+                    addLog("Орешки добавлены в рюкзак!");
+                } else if (found === "чей-то бутерброд") {
+                    inventory.push("чей-то бутерброд");
+                    addLog("чей-то бутерброд добавлен в рюкзак!");
+                }
+            }
+
+            if (inventory.includes("трость")) {
+                e += 1;
+                addLog("С тростью вам проще +1");
+                if (Math.floor(Math.random() * 10) + 1 === 10) {
+                    removeOneFromInventory("трость");
+                    addLog(randomChoice([
+                        "Ваша трость к сожалению сломалась",
+                        "Вы потеряли свою трость"
+                    ]));
+                }
+            }
+            if (inventory.includes("компас") && Math.floor(Math.random() * 30) + 1 === 30) {
+                removeOneFromInventory("компас");
+                addLog(randomChoice([
+                    "Компас упал на камень и разбился",
+                    "Вы потеряли свой компас"
+                ]));
+            }
+
+            addLog(`Энергия: ${e}`);
+            updateUI();
+            checkWinLose();
+        }
+
+        function restAction() {
+            if (!gameActive) return;
+            cooldownButtons(500);
+            let currentHod = hod;
+            addLog(`Ход ${currentHod}`);
+            hod++;
+            e += 2;
+            addLog("Вы отдыхаете +2");
+
+            let chance = Math.floor(Math.random() * 5) + 1;
+            if (chance === 1) {
+                e -= 4;
+                addLog(randomChoice(rest1));
+            } else if (chance === 5) {
+                e += 2;
+                addLog(randomChoice(rest5));
+                inventory.push("орешки");
+            } else if (chance === 3) {
+                e += 1;
+                addLog(randomChoice(rest3));
+            } else if (chance === 4) {
+                e -= 2;
+                addLog(randomChoice(rest4));
+            } else {
+                addLog(randomChoice(rest2));
+            }
+
+            let rareGlobal = Math.floor(Math.random() * 15) + 1;
+            if (rareGlobal === 1) {
+                addLog("Редкое событие! Вы нашли пирог");
+                inventory.push("пирог");
+                addLog("Пирог добавлен в рюкзак!");
+            } else if (rareGlobal === 2) {
+                e -= 7;
+                addLog("Редкое событие! Вы встретили медведя -7");
+            } else if (rareGlobal === 3) {
+                addLog("Редкое событие! Вы нашли на редкость вкусное яблоко");
+                inventory.push("яблоко");
+                addLog("Яблоко добавлен в рюкзак!");
+            } else if (rareGlobal === 4) {
+                e -= 2;
+                addLog("Редкое событие! Вас укусил комар -2 энергии");
+            }
+
+            let rareCompass = Math.floor(Math.random() * 50) + 1;
+            if (rareCompass === 50) {
+                addLog("Редкое событие! Вы нашли компас!");
+                inventory.push("компас");
+                addLog("Компас добавлен в рюкзак!");
+            }
+
+            if (hod % 6 === 0) {
+                let found = randomChoice(loot);
+                addLog(`Вы нашли: ${found}`);
+                if (found === "ягоды") {
+                    inventory.push("ягоды");
+                    addLog("Ягоды добавлены в рюкзак!");
+                } else if (found === "орешки") {
+                    inventory.push("орешки");
+                    addLog("Орешки добавлены в рюкзак!");
+                } else if (found === "чей-то бутерброд") {
+                    inventory.push("чей-то бутерброд");
+                    addLog("чей-то бутерброд добавлен в рюкзак!");
+                }
+            }
+
+            if (inventory.includes("трость")) {
+                e += 1;
+                addLog("С тростью вам проще +1");
+                if (Math.floor(Math.random() * 10) + 1 === 10) {
+                    removeOneFromInventory("трость");
+                    addLog(randomChoice([
+                        "Ваша трость к сожалению сломалась",
+                        "Вы потеряли свою трость"
+                    ]));
+                }
+            }
+            if (inventory.includes("компас") && Math.floor(Math.random() * 30) + 1 === 30) {
+                removeOneFromInventory("компас");
+                addLog(randomChoice([
+                    "Компас упал на камень и разбился",
+                    "Вы потеряли свой компас"
+                ]));
+            }
+
+            addLog(`Энергия: ${e}`);
+            updateUI();
+            checkWinLose();
+        }
+
+        function runAction() {
+            if (!gameActive) return;
+            cooldownButtons(500);
+            let currentHod = hod;
+            addLog(`Ход ${currentHod}`);
+            hod++;
+            e -= 3;
+            run += 1;
+            addLog("Вы бежите -3");
+
+            let chance = Math.floor(Math.random() * 5) + 1;
+            if (chance === 1) {
+                e -= 3;
+                addLog(randomChoice(run1));
+            } else if (chance === 5) {
+                e += 5;
+                addLog(randomChoice(run5));
+            } else if (chance === 3) {
+                e += 9;
+                addLog(randomChoice(run3));
+            } else if (chance === 4) {
+                e -= 6;
+                addLog(randomChoice(run4));
+            } else {
+                addLog(randomChoice(run2));
+            }
+
+            let rareRun = Math.floor(Math.random() * 10) + 1;
+            if (rareRun === 7) {
+                e -= 9;
+                addLog(randomChoice(run_rare));
+            }
+
+            let rareGlobal = Math.floor(Math.random() * 15) + 1;
+            if (rareGlobal === 1) {
+                addLog("Редкое событие! Вы нашли пирог");
+                inventory.push("пирог");
+                addLog("Пирог добавлен в рюкзак!");
+            } else if (rareGlobal === 2) {
+                e -= 7;
+                addLog("Редкое событие! Вы встретили медведя -7");
+            } else if (rareGlobal === 3) {
+                addLog("Редкое событие! Вы нашли на редкость вкусное яблоко");
+                inventory.push("яблоко");
+                addLog("Яблоко добавлен в рюкзак!");
+            } else if (rareGlobal === 4) {
+                e -= 2;
+                addLog("Редкое событие! Вас укусил комар -2 энергии");
+            }
+
+            let rareCompass = Math.floor(Math.random() * 50) + 1;
+            if (rareCompass === 50) {
+                addLog("Редкое событие! Вы нашли компас!");
+                inventory.push("компас");
+                addLog("Компас добавлен в рюкзак!");
+            }
+
+            if (hod % 6 === 0) {
+                let found = randomChoice(loot);
+                addLog(`Вы нашли: ${found}`);
+                if (found === "ягоды") {
+                    inventory.push("ягоды");
+                    addLog("Ягоды добавлены в рюкзак!");
+                } else if (found === "орешки") {
+                    inventory.push("орешки");
+                    addLog("Орешки добавлены в рюкзак!");
+                } else if (found === "чей-то бутерброд") {
+                    inventory.push("чей-то бутерброд");
+                    addLog("чей-то бутерброд добавлен в рюкзак!");
+                }
+            }
+
+            if (inventory.includes("трость")) {
+                e += 1;
+                addLog("С тростью вам проще +1");
+                if (Math.floor(Math.random() * 10) + 1 === 10) {
+                    removeOneFromInventory("трость");
+                    addLog(randomChoice([
+                        "Ваша трость к сожалению сломалась",
+                        "Вы потеряли свою трость"
+                    ]));
+                }
+            }
+            if (inventory.includes("компас") && Math.floor(Math.random() * 30) + 1 === 30) {
+                removeOneFromInventory("компас");
+                addLog(randomChoice([
+                    "Компас упал на камень и разбился",
+                    "Вы потеряли свой компас"
+                ]));
+            }
+
+            addLog(`Энергия: ${e}`);
+            updateUI();
+            checkWinLose();
+        }
+
+        function openInventoryPanel() {
+            if (!gameActive) return;
+            cooldownButtons(500);
+            let currentHod = hod;
+            addLog(`Ход ${currentHod}`);
+            hod++;
+            addLog("Статус:");
+            addLog(`Шагов сделано: ${steps}, Пробежек: ${run}`);
+            addLog("Инвентарь: " + (inventory.length ? inventory.join(", ") : "пусто"));
+            if (useItemPanel.classList.contains('hidden')) {
+                useItemPanel.classList.remove('hidden');
+                e -= 1;
+                addLog("Пока вы думали что вы сделали за сегодня, вы устали -1");
+                updateUI();
+                checkWinLose();
+            }
+        }
+
+        function useItemFromInput() {
+            if (!gameActive) return;
+            cooldownButtons(500);
+            const itemName = itemInput.value.trim().toLowerCase();
+            itemInput.value = '';
+
+            if (!itemName) {
+                addLog("Введите название предмета");
+                return;
+            }
+
+            if (!inventory.includes(itemName)) {
+                addLog("У вас нет этого");
+                return;
+            }
+
+            if (itemName === "ягоды") {
+                e += 2;
+                removeOneFromInventory("ягоды");
+                addLog("Вы съели ягоды +2");
+            } else if (itemName === "орешки") {
+                e += 2;
+                removeOneFromInventory("орешки");
+                addLog("Вы съели орешки +2");
+            } else if (itemName === "чей-то бутерброд") {
+                e += 4;
+                removeOneFromInventory("чей-то бутерброд");
+                addLog("Вы съели чей-то бутерброд +4");
+            } else if (itemName === "пирог") {
+                e += 4;
+                removeOneFromInventory("пирог");
+                addLog("Вы съели пирог +4");
+            } else if (itemName === "яблоко") {
+                e += 3;
+                removeOneFromInventory("яблоко");
+                addLog("Вы съели вкусное яблоко +3");
+            } else if (itemName === "трость") {
+                addLog("С тростью удобнее, но вы не можете её съесть :)");
+            } else if (itemName === "компас") {
+                addLog("Компас поможет вам найтись, но вы не можете его съесть :)");
+            } else {
+                addLog("У вас нет этого");
+            }
+
+            let tired = Math.floor(Math.random() * 2) + 1;
+            if (tired === 1) {
+                e -= 1;
+                addLog("Пока вы думали что вы сделали за сегодня, вы устали -1");
+            }
+
+            useItemPanel.classList.add('hidden');
+            updateUI();
+            checkWinLose();
+        }
+
+        function closeUsePanel() {
+            if (!gameActive) return;
+            cooldownButtons(500);
+            useItemPanel.classList.add('hidden');
+            addLog("Вы закрыли рюкзак");
+            let tired = Math.floor(Math.random() * 2) + 1;
+            if (tired === 1) {
+                e -= 1;
+                addLog("Пока вы думали что вы сделали за сегодня, вы устали -1");
+            }
+            updateUI();
+        }
+
+        // Назначение обработчиков
+        goBtn.addEventListener('click', goAction);
+        restBtn.addEventListener('click', restAction);
+        runBtn.addEventListener('click', runAction);
+        statusBtn.addEventListener('click', openInventoryPanel);
+        useItemBtn.addEventListener('click', useItemFromInput);
+        closeUsePanelBtn.addEventListener('click', closeUsePanel);
+        itemInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') useItemFromInput();
+        });
+
+        // Изначально игра неактивна
+        disableButtons(true);
+    })();
+</script>
+</body>
+</html>
